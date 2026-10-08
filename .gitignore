@@ -1,0 +1,4 @@
+# Runtime state: holds the proxy API key, Exa key, pid and logs. Never commit.
+.run/
+*.exe
+*.log
