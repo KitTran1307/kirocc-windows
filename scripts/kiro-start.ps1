@@ -15,7 +15,7 @@ if (-not (Test-Path $Bin)) { throw "kirocc binary not found at $Bin (build it or
 
 if (Test-Path $PidFile) {
     $old = Get-Process -Id (Get-Content $PidFile) -ErrorAction SilentlyContinue
-    if ($old) { Write-Host "kirocc already running (pid $($old.Id), port $(Get-Content (Join-Path $RunDir 'port')))"; return }
+    if ($old -and $old.ProcessName -eq 'kirocc') { Write-Host "kirocc already running (pid $($old.Id), port $(Get-Content (Join-Path $RunDir 'port')))"; return }
 }
 
 # Random token, created once and then reused, so Claude Desktop (which stores the
@@ -32,16 +32,25 @@ if ((Test-Path $KeyFile) -and (Get-Content $KeyFile -Raw).Trim()) {
 }
 Set-Content -Path (Join-Path $RunDir 'port') -Value $Port -NoNewline
 
-$procArgs = @('-host', '127.0.0.1', '-port', $Port, '-api-key', $Token,
+$procArgs = @('-host', '127.0.0.1', '-port', $Port,
               '-kiro-api-region', $Region, '-log-file', $LogFile)
+
+# Secrets go through the child's environment, not its command line, so other
+# processes cannot read them from the process list.
+$env:KIROCC_API_KEY = $Token
 
 # Optional web search: put an Exa API key in ~\.local\bin\.run\exa-key
 $ExaKeyFile = Join-Path $RunDir 'exa-key'
 if (Test-Path $ExaKeyFile) {
-    $procArgs += @('-web-search-provider', 'exa', '-web-search-api-key', (Get-Content $ExaKeyFile -Raw).Trim())
+    $procArgs += @('-web-search-provider', 'exa')
+    $env:KIROCC_WEB_SEARCH_API_KEY = (Get-Content $ExaKeyFile -Raw).Trim()
 }
 
-$p = Start-Process -FilePath $Bin -ArgumentList $procArgs -WindowStyle Hidden -PassThru
+try {
+    $p = Start-Process -FilePath $Bin -ArgumentList $procArgs -WindowStyle Hidden -PassThru
+} finally {
+    Remove-Item Env:KIROCC_API_KEY, Env:KIROCC_WEB_SEARCH_API_KEY -ErrorAction SilentlyContinue
+}
 Set-Content -Path $PidFile -Value $p.Id -NoNewline
 
 foreach ($i in 1..20) {

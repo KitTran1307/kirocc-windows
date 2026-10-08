@@ -11,7 +11,7 @@ if ($env:ANTHROPIC_BASE_URL) {
 $KeyFile = Join-Path $RunDir 'api-key'
 if (-not (Test-Path $KeyFile)) { Write-Host 'Start the proxy first: kiro-start'; return }
 
-$env:ANTHROPIC_BASE_URL = "http://127.0.0.1:$(Get-Content (Join-Path $RunDir 'port'))"
-$env:ANTHROPIC_AUTH_TOKEN = Get-Content $KeyFile -Raw
+$env:ANTHROPIC_BASE_URL = "http://127.0.0.1:$((Get-Content (Join-Path $RunDir 'port') -Raw).Trim())"
+$env:ANTHROPIC_AUTH_TOKEN = (Get-Content $KeyFile -Raw).Trim()
 $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
 Write-Host "Claude Code -> Kiro via $env:ANTHROPIC_BASE_URL. Run 'claude', then /model to pick a model."

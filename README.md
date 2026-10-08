@@ -10,10 +10,12 @@ Upstream chưa có bản dựng sẵn cho Windows, nên cần tự build bằng 
 
 ```powershell
 winget install GoLang.Go
-git clone https://github.com/d-kuro/kirocc $HOME\kirocc
+git clone --branch v0.15.0 --depth 1 https://github.com/d-kuro/kirocc $HOME\kirocc
 cd $HOME\kirocc
 go build -o kirocc.exe ./cmd/kirocc
 ```
+
+Lệnh trên ghim vào bản `v0.15.0` (bản đã được thử với các script này) thay vì nhánh mới nhất, để mã lạ từ upstream không tự chạy trên máy bạn. Muốn nâng cấp thì đọc lại thay đổi của upstream rồi đổi tag.
 
 Script tìm file `~\kirocc\kirocc.exe`. Nếu để chỗ khác, đặt biến môi trường `KIROCC_BIN`.
 
@@ -45,6 +47,13 @@ Biến tùy chọn: `KIROCC_PORT` (mặc định 3456), `KIRO_API_REGION` (mặc
 
 Lần chạy đầu tiên, proxy tạo một mật khẩu ngẫu nhiên và lưu ở `~\.local\bin\.run\api-key`, những lần sau dùng lại mật khẩu đó. Xóa file này nếu muốn đổi mật khẩu.
 
+## Bảo mật
+
+- Proxy chỉ nghe trên `127.0.0.1` và luôn đòi mật khẩu. Đừng đổi `-host` sang địa chỉ khác nếu không hiểu hệ quả.
+- Mật khẩu proxy và Exa key được lưu dạng văn bản thường trong `~\.local\bin\.run\`. Thư mục này nằm trong profile người dùng nên chỉ bạn, admin và SYSTEM đọc được. Đừng commit hay chia sẻ thư mục `.run`.
+- Các key được truyền cho kirocc qua biến môi trường của tiến trình con, không nằm trên dòng lệnh.
+- Hãy tự đọc điều khoản dịch vụ của Kiro để chắc rằng cách dùng này được phép với tài khoản của bạn.
+
 ## 4. Dùng với Claude Code dòng lệnh
 
 ```powershell
@@ -73,6 +82,10 @@ Lưu ý:
 ## Tìm kiếm web (tùy chọn)
 
 Lưu Exa API key vào `~\.local\bin\.run\exa-key`. Lần sau chạy `kiro-start`, proxy sẽ bật web search.
+
+## Giấy phép
+
+MIT, xem file `LICENSE`.
 
 ## Chi phí
 
